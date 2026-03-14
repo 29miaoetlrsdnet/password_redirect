@@ -2,164 +2,106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Protected Access</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Protected Page</title>
 
 <style>
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-family:Arial;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
+    margin:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background:linear-gradient(135deg,#4a6cf7,#6c8cff);
 }
 
-.card{
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(15px);
-  padding:40px;
-  border-radius:15px;
-  text-align:center;
-  color:white;
-  width:350px;
+.container{
+    background:white;
+    padding:40px;
+    width:320px;
+    border-radius:14px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+h1{
+    margin-bottom:10px;
+    font-size:22px;
+}
+
+p{
+    color:#666;
+    font-size:14px;
+    margin-bottom:25px;
 }
 
 input{
-  width:100%;
-  padding:12px;
-  margin-top:15px;
-  border-radius:8px;
-  border:none;
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    font-size:15px;
+    margin-bottom:15px;
 }
 
 button{
-  margin-top:10px;
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:white;
-  cursor:pointer;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#4a6cf7;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.2s;
 }
 
-.message{
-  margin-top:15px;
+button:hover{
+    background:#3955d6;
+}
+
+.error{
+    color:red;
+    font-size:13px;
+    margin-top:10px;
+    display:none;
 }
 </style>
-
 </head>
+
 <body>
 
-<div class="card">
+<div class="container">
+    <h1>Protected Page</h1>
+    <p>Please enter the password to continue</p>
 
-<h2>Protected Page</h2>
+    <input type="password" id="password" placeholder="Enter password">
+    <button onclick="checkPassword()">Continue</button>
 
-<input type="password" id="passwordInput" placeholder="Enter password">
-
-<button onclick="unlock()">Access</button>
-
-<div class="message" id="message"></div>
-
+    <div class="error" id="error">Incorrect password</div>
 </div>
 
 <script>
 
-/////////////////////////////////////////
-// CONFIGURATION (ONLY EDIT THESE)
-/////////////////////////////////////////
+const correctPassword = "andrew_scott_mansfield_stanish@f6"; 
+const redirectURL = "https://29miaoet.github.io/Andrew_WebPage/"; 
 
-const CONFIG = {
+function checkPassword(){
+    const input = document.getElementById("password").value;
 
-salt: "afdsuh981cmq1297jioafnp90q9i0f",
-
-iv: "DDQGT+RLQ28EMhLu",
-
-ciphertext: "MB3Tn51M5opD7iyQxjanZPeJ0cFaTQtHm5z4HP0W2m+TN0XgMt12N9QHNBsUH+DSJGP+F7zSAfzk+IYfX11Jv0o="
-
-};
-
-/////////////////////////////////////////
-
-
-async function deriveKey(password){
-
-const enc = new TextEncoder();
-
-const keyMaterial = await crypto.subtle.importKey(
-"raw",
-enc.encode(password),
-"PBKDF2",
-false,
-["deriveKey"]
-);
-
-return crypto.subtle.deriveKey(
-{
-name:"PBKDF2",
-salt:enc.encode(CONFIG.salt),
-iterations:150000,
-hash:"SHA-256"
-},
-keyMaterial,
-{ name:"AES-GCM", length:256 },
-false,
-["decrypt"]
-);
-
+    if(input === correctPassword){
+        window.location.href = redirectURL;
+    }else{
+        document.getElementById("error").style.display = "block";
+    }
 }
 
-
-function base64ToBytes(base64){
-
-const bin = atob(base64);
-const bytes = new Uint8Array(bin.length);
-
-for(let i=0;i<bin.length;i++){
-bytes[i] = bin.charCodeAt(i);
-}
-
-return bytes;
-
-}
-
-
-async function unlock(){
-
-const password = document.getElementById("passwordInput").value;
-const message = document.getElementById("message");
-
-try{
-
-const key = await deriveKey(password);
-
-const decrypted = await crypto.subtle.decrypt(
-{
-name:"AES-GCM",
-iv: base64ToBytes(CONFIG.iv)
-},
-key,
-base64ToBytes(CONFIG.ciphertext)
-);
-
-const url = new TextDecoder().decode(decrypted);
-
-message.textContent="Access granted...";
-setTimeout(()=>window.location=url,1000);
-
-}catch{
-
-message.textContent="Incorrect password";
-
-}
-
-}
-
-
-document.getElementById("passwordInput")
-.addEventListener("keypress",e=>{
-if(e.key==="Enter") unlock();
+document.getElementById("password")
+.addEventListener("keypress", function(e){
+    if(e.key === "Enter"){
+        checkPassword();
+    }
 });
 
 </script>
